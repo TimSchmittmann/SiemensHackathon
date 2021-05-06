@@ -2,6 +2,7 @@
 """
 Create 2d projections of the pointclouds and render them.
 """
+
 import numpy as np
 
 from highway.camera import load_poses, show_image
@@ -40,6 +41,7 @@ def main():
     img_height = 1200
     scale = 100
     y_offset = 3  # meter
+
     x_img = x * scale
     y_img = img_height - (y + y_offset) * scale
     points_2d = np.c_[x_img, y_img]
