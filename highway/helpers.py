@@ -44,18 +44,33 @@ def get_pose_indices_of_lidar_section(lidar_data, section_idx):
         if s_idx == section_idx:
             return list(range(nr_poses, nr_poses+len(section["poses"])))
 
-with open("highway_data/splitted/dataset.json", "r") as f:
-    lidar_data = json.load(f)
+def match_camera_pose_to_lidar_section(camera_pose: int,
+        camera_data_file= "highway_data/planar2/reference.json",
+        lidar_data_file = "highway_data/splitted/dataset.json"):
+    with open(lidar_data_file, "r") as f:
+        lidar_data = json.load(f)
+    camera_data = load_poses(camera_data_file)
+    lidar_poses, camera_poses = load_cp_lp_poses(lidar_data, camera_data)
+    best_matches_lp_cp, best_matches_cp_lp =  find_best_matches(lidar_poses, camera_poses)
+
+    matching_lidar_pose_idx = best_matches_cp_lp[camera_pose]
+    return get_lidar_section_by_pose_idx(lidar_data, matching_lidar_pose_idx)
+
+def match_lidar_section_to_camera_poses(lidar_section: int,
+        camera_data_file= "highway_data/planar2/reference.json",
+        lidar_data_file = "highway_data/splitted/dataset.json"):
+    with open(lidar_data_file, "r") as f:
+        lidar_data = json.load(f)
+    camera_data = load_poses(camera_data_file)
+    lidar_poses, camera_poses = load_cp_lp_poses(lidar_data, camera_data)
+    best_matches_lp_cp, best_matches_cp_lp =  find_best_matches(lidar_poses, camera_poses)
+
+    pose_indices_of_section = get_pose_indices_of_lidar_section(lidar_data, lidar_section)
+    matching_camera_pose_indices = [best_matches_lp_cp[p_idx] for p_idx in pose_indices_of_section]
+    return [d for i, d in enumerate(camera_data) if i in matching_camera_pose_indices]
 
 if __name__ == '__main__':
-    camera_data = load_poses("highway_data/planar2/reference.json")
-    lidar_poses, camera_poses = load_cp_lp_poses(lidar_data, camera_data)
-    best_matches_lp_cp, best_matches_cp_lp = find_best_matches(lidar_poses, camera_poses)
-
-    matching_lidar_pose_idx = best_matches_cp_lp[750]
-    lidar_section = get_lidar_section_by_pose_idx(lidar_data, matching_lidar_pose_idx)
-
-    pose_indices_of_section = get_pose_indices_of_lidar_section(lidar_data, 22)
-    matching_camera_pose_indices = [best_matches_lp_cp[p_idx] for p_idx in pose_indices_of_section]
+    camera_poses_of_section = match_lidar_section_to_camera_poses(21)
+    lidar_section_of_camera_pose = match_camera_pose_to_lidar_section(750)
 
 # %%
