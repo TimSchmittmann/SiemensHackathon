@@ -5,6 +5,7 @@ from PIL import Image
 from torchvision import transforms
 from PIL import ImageFilter, ImageEnhance
 import matplotlib.pyplot as plt
+import numpy as np
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("Device: %s" % device)
@@ -32,15 +33,16 @@ images = Image.open("sideview_000000_001594.jpg")
 images = images.convert("RGB")
 #sharpen
 
-images = images.filter(ImageFilter.SHARPEN)
-images = images.filter(ImageFilter.SHARPEN)
+#images = images.filter(ImageFilter.SHARPEN)
+#images = images.filter(ImageFilter.SHARPEN)
 #enhancer = ImageEnhance.Contrast(images)
 #factor = 1.5 #increase contrast
 #images = enhancer.enhance(factor)
 plt.imshow(images)
 
 #images = images.resize((1232,1028))
-images = images.resize((1540,1285))
+#images = images.resize((1540,1285))
+images = images.resize((200,200))
 
 preprocess = transforms.Compose([
     transforms.ToTensor(),
@@ -51,20 +53,48 @@ images = preprocess(images)
 #data in model
 images = images.to(device, dtype=torch.float32)
 images = images.unsqueeze_(0)
+images.shape
 
+#inference
 output = model(images)
-
-output=output[0]
+output = output[0]
 output = output.argmax(0)
 
-palette = torch.tensor([2 ** 25 - 1, 2 ** 15 - 1, 2 ** 19 - 1])
-colors = torch.as_tensor([i for i in range(19)])[:, None] * palette
-colors = (colors % 255).numpy().astype("uint8")
+# plot the semantic segmentation predictions of 19 classes in each color
+inf = output.byte().cpu().numpy()
 
-# plot the semantic segmentation predictions of 21 classes in each color
-r = Image.fromarray(output.byte().cpu().numpy())
-r.putpalette(colors)
+#put inf in list with class
+lengthx,lengthy = inf.shape
+length = lengthx*lengthy
+list = []
+#0,0 is top, left
+x = 0
+y = 0
+tuple = (0,x,y)
 
+for a in inf:
+    for b in a:
+        tuple = (b,x,y)
+        list.append(tuple)
+        x += 1
+    y+=1
+    x=0
+"""
+    if x<lengthx:
+        tuple = (a,x,y)
+        list.append(tuple)
+        x += 1
+    else:
+        x=0
+        y+=1
+        tuple = (a,x,y)
+        list.append(tuple)
+"""
+#print(list)
+
+r = Image.fromarray(inf)
+
+#show stuff
 plt.imshow(r)
 plt.show()
 
