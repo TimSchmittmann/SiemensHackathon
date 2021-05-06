@@ -1,12 +1,13 @@
 # %%
 import numpy as np
 
-from highway.camera import load_poses, show_image
-from highway.pointcloud import read_ply, render_points
+from .camera import load_poses, show_image
+from .pointcloud import read_ply, render_points
 import pandas as pd
 import numpy as np
 from filecache import filecache
 import json
+from pathlib import Path
 
 def load_cp_lp_poses(lidar_data, camera_data):
     camera_poses = np.array([[p["x"],p["y"],p["z"]] for p in camera_data])
@@ -45,7 +46,7 @@ def get_pose_indices_of_lidar_section(lidar_data, section_idx):
             return list(range(nr_poses, nr_poses+len(section["poses"])))
 
 def match_camera_pose_to_lidar_section(camera_pose: int,
-        camera_data_file= "highway_data/planar2/reference.json",
+        camera_data_file = "highway_data/planar2/reference.json",
         lidar_data_file = "highway_data/splitted/dataset.json"):
     with open(lidar_data_file, "r") as f:
         lidar_data = json.load(f)
