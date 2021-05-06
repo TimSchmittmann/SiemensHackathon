@@ -3,3 +3,4 @@ highway_data/
 *.dat
 *.bak
 *.dir
+*.egg-info/
