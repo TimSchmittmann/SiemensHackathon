@@ -31,10 +31,20 @@ model.to(device)
 denorm = utils.Denormalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # denormalization for ori images
 
 #prepare data
-for file in glob.glob(os.path.join("planar2/","*.jpg")):
+#for file in glob.glob(os.path.join("planar2/","*.jpg")):
+
+
+filedir = sorted(os.listdir('planar2/'))
+filedir = ['planar2/'+x for x in filedir]
+print(filedir)
+
+for file in filedir:
+    title = file.title().replace(".Jpg","").replace("Planar2/","")
+    if os.path.isfile("{}.png".format(title)) == True:
+        continue
 
     images = Image.open(file)
-    title = file.title().replace(".Jpg","").replace("Planar2/","")
+    #title = file.title().replace(".Jpg","").replace("Planar2/","")
     images = images.convert("RGB")
     print(title)
 
