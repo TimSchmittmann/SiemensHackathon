@@ -6,6 +6,8 @@ from torchvision import transforms
 from PIL import ImageFilter, ImageEnhance
 import matplotlib.pyplot as plt
 import numpy as np
+import glob
+import os
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print("Device: %s" % device)
@@ -29,72 +31,81 @@ model.to(device)
 denorm = utils.Denormalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # denormalization for ori images
 
 #prepare data
-images = Image.open("sideview_000000_001594.jpg")
-images = images.convert("RGB")
-#sharpen
+for file in glob.glob(os.path.join("planar2/","*.jpg")):
 
-#images = images.filter(ImageFilter.SHARPEN)
-#images = images.filter(ImageFilter.SHARPEN)
-#enhancer = ImageEnhance.Contrast(images)
-#factor = 1.5 #increase contrast
-#images = enhancer.enhance(factor)
-plt.imshow(images)
+    images = Image.open(file)
+    title = file.title().replace(".Jpg","").replace("Planar2/","")
+    images = images.convert("RGB")
+    print(title)
 
-#images = images.resize((1232,1028))
-#images = images.resize((1540,1285))
-images = images.resize((200,200))
+    #sharpen
+    #images = images.filter(ImageFilter.SHARPEN)
+    #images = images.filter(ImageFilter.SHARPEN)
+    #enhancer = ImageEnhance.Contrast(images)
+    #factor = 1.5 #increase contrast
+    #images = enhancer.enhance(factor)
+    #plt.imshow(images)
 
-preprocess = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
-images = preprocess(images)
+    #images = images.resize((1232,1028))
+    images = images.resize((1540,1285))
+    #images = images.resize((200,200))
 
-#data in model
-images = images.to(device, dtype=torch.float32)
-images = images.unsqueeze_(0)
-images.shape
+    preprocess = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+    images = preprocess(images)
 
-#inference
-output = model(images)
-output = output[0]
-output = output.argmax(0)
+    #data in model
+    images = images.to(device, dtype=torch.float32)
+    images = images.unsqueeze_(0)
+    images.shape
 
-# plot the semantic segmentation predictions of 19 classes in each color
-inf = output.byte().cpu().numpy()
+    #inference
+    output = model(images)
+    output = output[0]
+    output = output.argmax(0)
 
-#put inf in list with class
-lengthx,lengthy = inf.shape
-length = lengthx*lengthy
-list = []
-#0,0 is top, left
-x = 0
-y = 0
-tuple = (0,x,y)
+    # plot the semantic segmentation predictions of 19 classes in each color
+    inf = output.byte().cpu().numpy()
 
-for a in inf:
-    for b in a:
-        tuple = (b,x,y)
-        list.append(tuple)
-        x += 1
-    y+=1
-    x=0
-"""
-    if x<lengthx:
-        tuple = (a,x,y)
-        list.append(tuple)
-        x += 1
-    else:
-        x=0
+    #put inf in list with class
+    lengthx,lengthy = inf.shape
+    length = lengthx*lengthy
+    list = []
+    #0,0 is top, left
+    x = 0
+    y = 0
+    tuple = (0,x,y)
+
+    for a in inf:
+        for b in a:
+            if b == 1:
+                b = 0
+            tuple = (b,x,y)
+            list.append(tuple)
+            x += 1
         y+=1
-        tuple = (a,x,y)
-        list.append(tuple)
-"""
-#print(list)
+        x=0
+    """
+        if x<lengthx:
+            tuple = (a,x,y)
+            list.append(tuple)
+            x += 1
+        else:
+            x=0
+            y+=1
+            tuple = (a,x,y)
+            list.append(tuple)
+    """
+    #print(list)
 
-r = Image.fromarray(inf)
+    r = Image.fromarray(inf)
+    r = r.resize((2464,2056))
+    #show stuff
+    #plt.imshow(r)
+    #plt.show()
+    plt.imsave("{}.png".format(title), r)
 
-#show stuff
-plt.imshow(r)
-plt.show()
+    #r.save("{}.jpg".format(title))
 
