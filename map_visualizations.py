@@ -53,41 +53,26 @@ folium.LayerControl().add_to(map)
 
 exit_sign_locations = [488, 1764, 333]
 bridge_locations = [38, 1565, 888]
-tree_locations = [125,222, 277,  881, 1171]
-tree_locations += list(range(255, 500, 5))
-tree_locations += list(range(670, 875, 5))
-tree_locations += list(range(900, 1150, 5))
-tree_locations += list(range(1325, 1355, 5))
+bridge_heights = [4.5, 5, 5.25]
 
-
-exit_i = skimage.io.imread("../icons/abfahrtsschild.png")
+exit_i = skimage.io.imread("icons/abfahrtsschild.png")
 for loc in exit_sign_locations:
     exit_sign_icon = folium.features.CustomIcon(
-        exit_i, icon_size=(90,90))
+        exit_i, icon_size=(40,40))
     pos = long_lat_height[loc]
     folium.Marker(
-        [pos[0], pos[1]], popup="<i>Mt. Hood Meadows</i>", tooltip="Test",
+        [pos[0], pos[1]], popup="<i>height: 4.50 m</i>", tooltip="Exit sign",
         icon=exit_sign_icon
     ).add_to(exit_sign_cluster)
 
-bridge_i = skimage.io.imread("../icons/bridge.svg.png")
-for loc in bridge_locations:
+bridge_i = skimage.io.imread("icons/bridge.svg.png")
+for loc, height in zip(bridge_locations, bridge_heights):
     bridge_icon = folium.features.CustomIcon(bridge_i, icon_size=(80,30))
     pos = long_lat_height[loc]
     folium.Marker(
-        [pos[0], pos[1]], popup="<i>Mt. Hood Meadows</i>", tooltip="Test",
+        [pos[0], pos[1]], popup=f"<i>height: {height} m</i>", tooltip="Bridge",
         icon=bridge_icon
     ).add_to(bridge_cluster)
-
-tree_i = skimage.io.imread("../icons/tree.png")
-for loc in tree_locations:
-    tree_icon = folium.features.CustomIcon(
-        tree_i, icon_size=(20,20))
-    pos = long_lat_height[loc]
-    folium.Marker(
-        [pos[0], pos[1]], popup="<i>Mt. Hood Meadows</i>", tooltip="Test",
-        icon=tree_icon
-    ).add_to(tree_cluster)
 
 map.save("../map.html")
 
