@@ -63,7 +63,7 @@ def match_camera_pose_to_lidar_section(camera_pose: int,
     lidar_poses, camera_poses = load_cp_lp_poses(lidar_data, camera_data)
     best_match_lp_idx =  find_best_lidar_pose_for_camera_pose(camera_poses[camera_pose], lidar_poses)
 
-    return get_lidar_section_by_pose_idx(lidar_data, best_match_lp_idx)
+    return best_match_lp_idx, get_lidar_section_by_pose_idx(lidar_data, best_match_lp_idx)
 
 @filecache(365 * 24 * 60 * 60)
 def match_lidar_section_to_camera_poses(lidar_section: int,
@@ -77,7 +77,7 @@ def match_lidar_section_to_camera_poses(lidar_section: int,
 
     lidar_pose_indices_of_section = get_lidar_pose_indices_of_section(lidar_data, lidar_section)
     matching_camera_pose_indices = [best_matches_lp_cp[p_idx] for p_idx in lidar_pose_indices_of_section]
-    return [d for i, d in enumerate(camera_data) if i in matching_camera_pose_indices]
+    return [(i,d) for i, d in enumerate(camera_data) if i in matching_camera_pose_indices]
 
 if __name__ == '__main__':
     camera_poses_of_section = match_lidar_section_to_camera_poses(22)
