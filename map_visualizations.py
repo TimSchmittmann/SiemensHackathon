@@ -13,7 +13,7 @@ from highway.camera import load_poses
 from highway.transform import to_gps
 from random import randrange
 # %%
-pose_file = "highway_data/planar1/reference.json"
+pose_file = "../highway_data/planar1/reference.json"
 
 poses = load_poses(pose_file)
 xyz = np.array([(pose['x'], pose['y'], pose['z']) for pose in poses])
@@ -29,19 +29,6 @@ print()
 print("GPS coordinates of the camera trajectory")
 print(long_lat_height)
 
-# %%
-def add_random_marker(el, long_lat_height,
-    icon_url, icon_size=(20,20),repeat=3):
-    for _ in range(repeat):
-        stop_sign_icon = folium.features.CustomIcon(
-            skimage.io.imread(icon_url), icon_size=icon_size)
-        pos = long_lat_height[randrange(len(long_lat_height))]
-        folium.Marker(
-            [pos[0], pos[1]], popup="<i>Mt. Hood Meadows</i>", tooltip="Test",
-            icon=stop_sign_icon
-        ).add_to(el)
-
-# %%
 # export to maps
 map = folium.Map(location=long_lat_height[0, :2], zoom_start=13)
 folium.PolyLine(
@@ -50,28 +37,59 @@ folium.PolyLine(
     color="#000000"
 ).add_to(map)
 
-stop_signs = folium.FeatureGroup(name='Stop signs', show=True)
+exit_signs = folium.FeatureGroup(name='Exit signs', show=True)
 trees = folium.FeatureGroup(name='Trees', show=True)
 bridges = folium.FeatureGroup(name='Bridges', show=True)
 
-map.add_child(stop_signs)
+map.add_child(exit_signs)
 map.add_child(trees)
 map.add_child(bridges)
 
-stop_sign_cluster = MarkerCluster().add_to(stop_signs)
+exit_sign_cluster = MarkerCluster().add_to(exit_signs)
 tree_cluster = MarkerCluster().add_to(trees)
 bridge_cluster = MarkerCluster().add_to(bridges)
 
 folium.LayerControl().add_to(map)
 
-add_random_marker(stop_sign_cluster, long_lat_height,
-    icon_url="icons/1024px-Stopsign.png", icon_size=(20,20), repeat=3)
-add_random_marker(tree_cluster, long_lat_height,
-    icon_url="icons/bridge.svg.png", icon_size=(80,30), repeat=3)
-add_random_marker(bridge_cluster, long_lat_height,
-    icon_url="icons/tree.png", icon_size=(20,20), repeat=3)
+exit_sign_locations = [488, 1764, 333]
+bridge_locations = [38, 1565, 888]
+tree_locations = [125,222, 277,  881, 1171]
+tree_locations += list(range(255, 500, 5))
+tree_locations += list(range(670, 875, 5))
+tree_locations += list(range(900, 1150, 5))
+tree_locations += list(range(1325, 1355, 5))
 
-map.save("example_3_index.html")
+
+exit_i = skimage.io.imread("../icons/abfahrtsschild.png")
+for loc in exit_sign_locations:
+    exit_sign_icon = folium.features.CustomIcon(
+        exit_i, icon_size=(90,90))
+    pos = long_lat_height[loc]
+    folium.Marker(
+        [pos[0], pos[1]], popup="<i>Mt. Hood Meadows</i>", tooltip="Test",
+        icon=exit_sign_icon
+    ).add_to(exit_sign_cluster)
+
+bridge_i = skimage.io.imread("../icons/bridge.svg.png")
+for loc in bridge_locations:
+    bridge_icon = folium.features.CustomIcon(bridge_i, icon_size=(80,30))
+    pos = long_lat_height[loc]
+    folium.Marker(
+        [pos[0], pos[1]], popup="<i>Mt. Hood Meadows</i>", tooltip="Test",
+        icon=bridge_icon
+    ).add_to(bridge_cluster)
+
+tree_i = skimage.io.imread("../icons/tree.png")
+for loc in tree_locations:
+    tree_icon = folium.features.CustomIcon(
+        tree_i, icon_size=(20,20))
+    pos = long_lat_height[loc]
+    folium.Marker(
+        [pos[0], pos[1]], popup="<i>Mt. Hood Meadows</i>", tooltip="Test",
+        icon=tree_icon
+    ).add_to(tree_cluster)
+
+map.save("../map.html")
 
 
 
