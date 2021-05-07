@@ -97,6 +97,10 @@ for file in filedir:
             x += 1
         y+=1
         x=0
+    with open("info{].txt".format(title)) as f:
+        f.write(tuple)
+        f.close()
+
     """
         if x<lengthx:
             tuple = (a,x,y)
