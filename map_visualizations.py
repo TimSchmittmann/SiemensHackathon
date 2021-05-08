@@ -4,6 +4,7 @@ Convert pointcloud coordinates into GPS and visualize them with OpenStreetMaps
 """
 
 # %%
+from folium.map import LayerControl
 import numpy as np
 import folium
 import folium.features
@@ -30,26 +31,41 @@ print("GPS coordinates of the camera trajectory")
 print(long_lat_height)
 
 # export to maps
-map = folium.Map(location=long_lat_height[0, :2], zoom_start=13)
+m = folium.Map(location=long_lat_height[0, :2], zoom_start=13)
 folium.PolyLine(
     locations=long_lat_height[:, :2],
     popup="Planar 1 Reference",
     color="#000000"
-).add_to(map)
+).add_to(m)
 
-exit_signs = folium.FeatureGroup(name='Exit signs', show=True)
-trees = folium.FeatureGroup(name='Trees', show=True)
-bridges = folium.FeatureGroup(name='Bridges', show=True)
+m.get_root().header.add_child(folium.CssLink('./map.css'))
 
-map.add_child(exit_signs)
-map.add_child(trees)
-map.add_child(bridges)
+exit_signs = folium.FeatureGroup(name='''
+    <span class="label-btn strong" id="label1">Exit signs:</span>
+    <span class="total">Total signs on route: 5</span>, <span >Blocking signs: 1</span><br/> Estimated removal cost: <span id="cost0" class="strong">25000</span><span class="strong">€</span></span>
+    <hr>'''
+    , show=True)
+# trees = folium.FeatureGroup(name='''
+#     <span class="label-btn  strong">Trees:</span>
+#     <span class="total">Total trees on route: 1437</span>, <span >Blocking tree: 63</span><br/> Estimated removal cost: <span id="cost1" class="strong">237432</span><span class="strong">€</span></span>
+#     <hr>'''
+#     , show=True)
+bridges = folium.FeatureGroup(name='''
+    <span class="label-btn strong" id="label2">Bridges:</span>
+    <span class="total">Total bridges on route: 3</span>, <span >Blocking bridges: 3</span><br/> Estimated removal cost: <span  id="cost1" class="strong">237432</span><span class="strong">€</span></span>
+    <hr><br/><span class="strong">Final cost estimation: <span  id="costfinal strong">262432</span><span class="strong">€</span></span>'''
+    , show=True)
+
+m.add_child(exit_signs)
+# m.add_child(trees)
+m.add_child(bridges)
 
 exit_sign_cluster = MarkerCluster().add_to(exit_signs)
-tree_cluster = MarkerCluster().add_to(trees)
+# tree_cluster = MarkerCluster().add_to(trees)
 bridge_cluster = MarkerCluster().add_to(bridges)
 
-folium.LayerControl().add_to(map)
+layer_control = folium.LayerControl()
+layer_control.add_to(m)
 
 exit_sign_locations = [488, 1764, 333]
 bridge_locations = [38, 1565, 888]
@@ -79,17 +95,43 @@ for loc in bridge_locations:
         icon=bridge_icon
     ).add_to(bridge_cluster)
 
-tree_i = skimage.io.imread("../icons/tree.png")
-for loc in tree_locations:
-    tree_icon = folium.features.CustomIcon(
-        tree_i, icon_size=(20,20))
-    pos = long_lat_height[loc]
-    folium.Marker(
-        [pos[0], pos[1]], popup="<i>Mt. Hood Meadows</i>", tooltip="Test",
-        icon=tree_icon
-    ).add_to(tree_cluster)
+# tree_i = skimage.io.imread("../icons/tree.png")
+# for loc in tree_locations:
+#     tree_icon = folium.features.CustomIcon(
+#         tree_i, icon_size=(20,20))
+#     pos = long_lat_height[loc]
+#     folium.Marker(
+#         [pos[0], pos[1]], popup="<i>Mt. Hood Meadows</i>", tooltip="Test",
+#         icon=tree_icon
+#     ).add_to(tree_cluster)
 
-map.save("../map.html")
+# m.get_root().script.add_child(folium.Element('''
+
+# var triggered = false;
+# $(document).ready(function() {
+
+# $("#cost0").parent().parent().on("click", function(e) {
+#     e.preventDefault()
+#     if (parseInt($("#cost0").html()) === 0) {
+#         $("#cost0").html("25000");
+#     } else {
+#         $("#cost0").html("0");
+#     }
+#     $("#costfinal").html(parseInt($("#cost0").html()) + parseInt($("#cost1").html()));
+# });
+
+# $("#cost1").parent().parent().on("click", function(e) {
+#     e.preventDefault()
+#     if (parseInt($("#cost1").html()) === 0) {
+#         $("#cost1").html("262432");
+#     } else {
+#         $("#cost1").html("0");
+#     }
+#     $("#costfinal").html(parseInt($("#cost0").html()) + parseInt($("#cost1").html()));
+# });
+# });'''))
+
+m.save("../map.html")
 
 
 
